@@ -12,4 +12,18 @@ services:
       - type: bind
         source: ./imposters
         target: /imposters
-      
+
+  payment_gateway:
+    container_name: payment_gateway
+    image: eclipse-temurin:17-jdk
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ~/.gradle:/root/.gradle
+    ports:
+      - "8090:8090"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    command: ./gradlew bootRun
+    depends_on:
+      - bank_simulator

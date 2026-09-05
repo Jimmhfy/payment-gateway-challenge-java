@@ -1,0 +1,8 @@
+{
+  "currency": "HKD",
+  "amount": -100,
+  "cvv": "11111",
+  "card_number": "4321",
+  "expiry_month": 99,
+  "expiry_year": 20207
+}

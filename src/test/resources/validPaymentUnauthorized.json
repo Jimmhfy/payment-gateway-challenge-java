@@ -1,0 +1,8 @@
+{
+  "currency": "GBP",
+  "amount": 100,
+  "cvv": "111",
+  "card_number": "4321432143214322",
+  "expiry_month": 1,
+  "expiry_year": 2027
+}

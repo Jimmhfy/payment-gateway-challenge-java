@@ -3,6 +3,7 @@ package com.checkout.payment.gateway.model;
 import com.checkout.payment.gateway.enums.PaymentStatus;
 import java.util.UUID;
 
+@Deprecated
 public class GetPaymentResponse {
   private UUID id;
   private PaymentStatus status;

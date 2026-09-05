@@ -1,17 +1,43 @@
 package com.checkout.payment.gateway.model;
 
 import com.checkout.payment.gateway.enums.PaymentStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
+@Schema(description = "Response of payment details")
 public class PostPaymentResponse {
+  @Schema(description = "UUID", example = "c85c3e6a-a247-4270-abc8-3cb2bc0b66d1")
   private UUID id;
-  private PaymentStatus status;
-  private int cardNumberLastFour;
-  private int expiryMonth;
-  private int expiryYear;
-  private String currency;
-  private int amount;
 
+  @Schema(description = "Payment status", example = "Authorized")
+  private PaymentStatus status;
+
+  @Schema(description = "Last four digits of card number", example = "4321")
+  private Integer cardNumberLastFour;
+
+  @Schema(description = "Expiry Month (1-12)", example = "1")
+  private Integer expiryMonth;
+
+  @Schema(description = "Expiry Year (YYYY)", example = "2027")
+  private Integer expiryYear;
+
+  @Schema(description = "Currency code in ISO 4217 format", example = "GBP", allowableValues = {"GBP", "EUR", "USD"})
+  private String currency;
+
+  @Schema(description = "Amount in minor currency unit", example = "100")
+  private Integer amount;
+
+  public PostPaymentResponse () {}
+
+  public PostPaymentResponse(UUID id, PostPaymentRequest request, PaymentStatus status) {
+    this.id = id;
+    this.status = status;
+    this.cardNumberLastFour = getLastFourDigits(request.getCardNumber());
+    this.expiryMonth = request.getExpiryMonth();
+    this.expiryYear = request.getExpiryYear();
+    this.currency = request.getCurrency();
+    this.amount = request.getAmount();
+  }
 
   public UUID getId() {
     return id;
@@ -29,7 +55,7 @@ public class PostPaymentResponse {
     this.status = status;
   }
 
-  public int getCardNumberLastFour() {
+  public Integer getCardNumberLastFour() {
     return cardNumberLastFour;
   }
 
@@ -37,7 +63,7 @@ public class PostPaymentResponse {
     this.cardNumberLastFour = cardNumberLastFour;
   }
 
-  public int getExpiryMonth() {
+  public Integer getExpiryMonth() {
     return expiryMonth;
   }
 
@@ -45,7 +71,7 @@ public class PostPaymentResponse {
     this.expiryMonth = expiryMonth;
   }
 
-  public int getExpiryYear() {
+  public Integer getExpiryYear() {
     return expiryYear;
   }
 
@@ -61,7 +87,7 @@ public class PostPaymentResponse {
     this.currency = currency;
   }
 
-  public int getAmount() {
+  public Integer getAmount() {
     return amount;
   }
 
@@ -71,7 +97,7 @@ public class PostPaymentResponse {
 
   @Override
   public String toString() {
-    return "GetPaymentResponse{" +
+    return "PostPaymentResponse{" +
         "id=" + id +
         ", status=" + status +
         ", cardNumberLastFour=" + cardNumberLastFour +
@@ -80,5 +106,9 @@ public class PostPaymentResponse {
         ", currency='" + currency + '\'' +
         ", amount=" + amount +
         '}';
+  }
+
+  private int getLastFourDigits(String cardNumber) {
+    return Integer.parseInt(cardNumber.substring(cardNumber.length() - 4));
   }
 }

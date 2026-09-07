@@ -2,6 +2,7 @@ package com.checkout.payment.gateway.exception;
 
 import com.checkout.payment.gateway.model.ErrorResponse;
 import com.checkout.payment.gateway.model.ValidationFieldError;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +14,13 @@ import java.util.List;
 
 @ControllerAdvice
 public class CommonExceptionHandler {
-
   private static final Logger LOG = LoggerFactory.getLogger(CommonExceptionHandler.class);
+
+  private final MeterRegistry meterRegistry;
+
+  public CommonExceptionHandler(MeterRegistry meterRegistry) {
+    this.meterRegistry = meterRegistry;
+  }
 
   @ExceptionHandler(PaymentNotFoundException.class)
   public ResponseEntity<ErrorResponse> handleException(PaymentNotFoundException ex) {
@@ -63,6 +69,7 @@ public class CommonExceptionHandler {
   public ResponseEntity<ErrorResponse> handleAcquireBankEndpointException(AcquireBankEndpointException ex) {
     String errorMessage = ex.getMessage();
     LOG.error("Acquire bank endpoint return error, msg={}", errorMessage);
+    meterRegistry.counter("acquiring.bank.endpoint.errors.total", "exception", ex.getClass().getSimpleName()).increment();
     return new ResponseEntity<>(
         new ErrorResponse(
             ex.getPaymentServerErrorCode().errorCode,
@@ -83,6 +90,7 @@ public class CommonExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception ex) {
     LOG.error("Unexpected error, msg={}", ex.getMessage());
+    meterRegistry.counter("uncaught.errors.total", "exception", ex.getClass().getSimpleName()).increment();
     return new ResponseEntity<>(
         new ErrorResponse(
             PaymentServerErrorCode.INTERNAL_ERROR.errorCode,

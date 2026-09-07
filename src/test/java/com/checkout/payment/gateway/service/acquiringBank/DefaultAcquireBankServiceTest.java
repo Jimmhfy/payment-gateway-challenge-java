@@ -6,6 +6,8 @@ import com.checkout.payment.gateway.exception.PaymentServerErrorCode;
 import com.checkout.payment.gateway.model.PostPaymentRequest;
 import com.checkout.payment.gateway.model.acquireBank.BankPaymentRequestDTO;
 import com.checkout.payment.gateway.model.acquireBank.BankPaymentResponseDTO;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,10 +40,13 @@ class DefaultAcquireBankServiceTest {
 
   DefaultAcquireBankService acquireBankService;
 
+  private MeterRegistry meterRegistry;
+
   @BeforeEach
   void setUp() {
     request = buildPaymentRequest();
-    acquireBankService = new DefaultAcquireBankService(restTemplate, ACQUIRING_BANK_URL);
+    meterRegistry = new SimpleMeterRegistry();
+    acquireBankService = new DefaultAcquireBankService(restTemplate, ACQUIRING_BANK_URL, meterRegistry);
   }
 
   @Test

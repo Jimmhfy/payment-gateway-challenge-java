@@ -6,9 +6,12 @@ import com.checkout.payment.gateway.model.PostPaymentRequest;
 import com.checkout.payment.gateway.model.PostPaymentResponse;
 import com.checkout.payment.gateway.model.acquireBank.BankPaymentResponseDTO;
 import com.checkout.payment.gateway.repository.PaymentsRepository;
+import java.time.Instant;
 import java.util.UUID;
 import com.checkout.payment.gateway.service.acquiringBank.AcquireBankService;
 import com.checkout.payment.gateway.validator.CardValidator;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,11 +23,13 @@ public class PaymentGatewayService {
   private final PaymentsRepository paymentsRepository;
   private final AcquireBankService acquireBankService;
   private final CardValidator cardValidator;
+  private final MeterRegistry meterRegistry;
 
-  public PaymentGatewayService(PaymentsRepository paymentsRepository, AcquireBankService acquireBankService, CardValidator cardValidator) {
+  public PaymentGatewayService(PaymentsRepository paymentsRepository, AcquireBankService acquireBankService, CardValidator cardValidator, MeterRegistry meterRegistry) {
     this.paymentsRepository = paymentsRepository;
     this.acquireBankService = acquireBankService;
     this.cardValidator = cardValidator;
+    this.meterRegistry = meterRegistry;
   }
 
   public PostPaymentResponse getPaymentById(UUID id) {
@@ -52,6 +57,9 @@ public class PaymentGatewayService {
 
     savePaymentResponse(postPaymentResponse, paymentId, idempotencyKey);
 
+    // Payment metrics for prometheus
+    doPaymentStatusMeterCounter(paymentStatus);
+
     return postPaymentResponse;
   }
 
@@ -63,6 +71,10 @@ public class PaymentGatewayService {
     // Store the idempotencyKey paymentID pair if presented.
     if (idempotencyKey != null && !idempotencyKey.isBlank())
       paymentsRepository.addIdempotentKey(idempotencyKey, paymentId);
+  }
+
+  private void doPaymentStatusMeterCounter(PaymentStatus status){
+    meterRegistry.counter("payment.transactions", "status", status.getName().toLowerCase()).increment();
   }
 
   private PostPaymentResponse getProcessedPayment(String idempotencyKey) {

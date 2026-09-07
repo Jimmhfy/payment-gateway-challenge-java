@@ -166,6 +166,6 @@ docker-compose up bank_simulator
 ### Run the payment gateway standalone (port 8090)
 `./gradlew bootRun`
 ### Execute unit tests
-`./gradlew test`
+`./gradlew test --no-daemon --info`
 ### To Stop Gradle
 `./gradlew --stop`

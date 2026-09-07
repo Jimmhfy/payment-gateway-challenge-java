@@ -10,6 +10,8 @@ import com.checkout.payment.gateway.model.acquireBank.BankPaymentResponseDTO;
 import com.checkout.payment.gateway.repository.PaymentsRepository;
 import com.checkout.payment.gateway.service.acquiringBank.AcquireBankService;
 import com.checkout.payment.gateway.validator.CardValidator;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,10 +49,13 @@ class PaymentGatewayServiceTest {
   CardValidator cardValidator;
   private PostPaymentRequest request;
 
+  private MeterRegistry meterRegistry;
+
   @BeforeEach
   void setUp() {
     cardValidator = new CardValidator();
-    paymentGatewayService = new PaymentGatewayService(paymentsRepository, acquireBankService, cardValidator);
+    meterRegistry = new SimpleMeterRegistry();
+    paymentGatewayService = new PaymentGatewayService(paymentsRepository, acquireBankService, cardValidator, meterRegistry);
 
     request = buildPaymentRequest();
   }

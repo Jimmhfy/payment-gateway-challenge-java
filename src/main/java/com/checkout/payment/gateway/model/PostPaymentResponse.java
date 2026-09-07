@@ -13,7 +13,7 @@ public class PostPaymentResponse {
   private PaymentStatus status;
 
   @Schema(description = "Last four digits of card number", example = "4321")
-  private Integer cardNumberLastFour;
+  private String cardNumberLastFour;
 
   @Schema(description = "Expiry Month (1-12)", example = "1")
   private Integer expiryMonth;
@@ -55,11 +55,11 @@ public class PostPaymentResponse {
     this.status = status;
   }
 
-  public Integer getCardNumberLastFour() {
+  public String getCardNumberLastFour() {
     return cardNumberLastFour;
   }
 
-  public void setCardNumberLastFour(int cardNumberLastFour) {
+  public void setCardNumberLastFour(String cardNumberLastFour) {
     this.cardNumberLastFour = cardNumberLastFour;
   }
 
@@ -108,7 +108,7 @@ public class PostPaymentResponse {
         '}';
   }
 
-  private int getLastFourDigits(String cardNumber) {
-    return Integer.parseInt(cardNumber.substring(cardNumber.length() - 4));
+  private String getLastFourDigits(String cardNumber) {
+    return cardNumber.substring(cardNumber.length() - 4);
   }
 }

@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.checkout.payment.gateway.PaymentTestDataHelper.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,13 +30,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentGatewayServiceTest {
-  private final String AUTHORIZED_CARD_NUMBER = "4321432143214321";
-  private final String UNAUTHORIZED_CARD_NUMBER = "4321432143214322";
-  private final String SERVICE_UNAVAILABLE_CARD_NUMBER = "4321432143214320";
-
-  private final String EMPTY_IDEMPOTENCY_KEY = "";
-  private final String IDEMPOTENCY_KEY = "test-key-12345";
-
   PaymentGatewayService paymentGatewayService;
 
   @Mock
@@ -81,7 +75,7 @@ class PaymentGatewayServiceTest {
 
     assertNotNull(response.getId());
     assertEquals(PaymentStatus.AUTHORIZED, response.getStatus());
-    assertEquals(4321, response.getCardNumberLastFour());
+    assertEquals("4321", response.getCardNumberLastFour());
     assertEquals("GBP", response.getCurrency());
     assertEquals(100, response.getAmount());
     verify(paymentsRepository).add(response);
@@ -125,32 +119,5 @@ class PaymentGatewayServiceTest {
     assertThrows(AcquireBankEndpointException.class, () -> paymentGatewayService.processPayment(EMPTY_IDEMPOTENCY_KEY, request));
 
     verify(paymentsRepository, never()).add(any());
-  }
-
-  private PostPaymentRequest buildPaymentRequest() {
-    PostPaymentRequest request = new PostPaymentRequest();
-    request.setCardNumber(AUTHORIZED_CARD_NUMBER);
-    request.setAmount(100);
-    request.setCurrency("GBP");
-    request.setExpiryMonth(12);
-    request.setExpiryYear(2027);
-    return request;
-  }
-
-  private PostPaymentResponse buildPaymentResponse(UUID paymentId) {
-    PostPaymentResponse response = new PostPaymentResponse();
-    response.setId(paymentId);
-    response.setAmount(100);
-    response.setCurrency("GBP");
-    response.setStatus(PaymentStatus.AUTHORIZED);
-    response.setExpiryMonth(12);
-    response.setExpiryYear(2027);
-    response.setCardNumberLastFour(4321);
-    return response;
-  }
-
-  private BankPaymentResponseDTO buildBankPaymentResponseDTO(boolean authorized) {
-    final String AUTHORIZED_CODE = "f973e576-c898-448a-800d-9effc0e064e4";
-    return new BankPaymentResponseDTO(authorized, authorized ? AUTHORIZED_CODE : "");
   }
 }

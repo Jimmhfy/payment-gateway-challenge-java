@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static com.checkout.payment.gateway.PaymentTestDataHelper.*;
 
 import com.checkout.payment.gateway.enums.PaymentStatus;
 import com.checkout.payment.gateway.exception.AcquireBankEndpointException;
@@ -47,9 +48,6 @@ class PaymentGatewayControllerTest {
   private ObjectMapper objectMapper;
 
   private Map<String, Object> jsonMap;
-  private final String AUTHORIZED_CARD_NUMBER = "4321432143214321";
-  private final String UNAUTHORIZED_CARD_NUMBER = "4321432143214322";
-  private final String SERVICE_UNAVAILABLE_CARD_NUMBER = "4321432143214320";
 
   @BeforeEach
   void setUp() {
@@ -66,7 +64,7 @@ class PaymentGatewayControllerTest {
     payment.setStatus(PaymentStatus.AUTHORIZED);
     payment.setExpiryMonth(12);
     payment.setExpiryYear(2024);
-    payment.setCardNumberLastFour(4321);
+    payment.setCardNumberLastFour("4321");
 
     paymentsRepository.add(payment);
 
@@ -100,7 +98,24 @@ class PaymentGatewayControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").exists())
         .andExpect(jsonPath("$.status").value("Authorized"))
-        .andExpect(jsonPath("$.cardNumberLastFour").value(4321))
+        .andExpect(jsonPath("$.cardNumberLastFour").value("4321"))
+        .andExpect(jsonPath("$.amount").value(100))
+        .andExpect(jsonPath("$.currency").value("GBP"));
+  }
+
+  @Test
+  void whenPaymentIsAuthorizedWithIdempotencyThen200IsReturned() throws Exception {
+    BankPaymentResponseDTO expectedBankResponse = buildBankPaymentResponseDTO(true);
+    when(acquireBankService.submitPayment(any())).thenReturn(expectedBankResponse);
+
+    mvc.perform(MockMvcRequestBuilders.post("/payment")
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Idempotency-Key", "test-key-12345")
+            .content(objectMapper.writeValueAsString(jsonMap)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").exists())
+        .andExpect(jsonPath("$.status").value("Authorized"))
+        .andExpect(jsonPath("$.cardNumberLastFour").value("4321"))
         .andExpect(jsonPath("$.amount").value(100))
         .andExpect(jsonPath("$.currency").value("GBP"));
   }
@@ -207,25 +222,5 @@ class PaymentGatewayControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(paymentId))
         .andExpect(jsonPath("$.status").value("Authorized"));
-  }
-
-  private Map<String, Object> buildPaymentBody() {
-    Map<String, Object> bodyMap = new HashMap<>();
-    bodyMap.put("card_number", AUTHORIZED_CARD_NUMBER);
-
-    YearMonth future = YearMonth.now().plusYears(1);
-    bodyMap.put("expiry_month", future.getMonthValue());
-    bodyMap.put("expiry_year", future.getYear());
-
-    bodyMap.put("currency", "GBP");
-    bodyMap.put("amount", 100);
-    bodyMap.put("cvv", "111");
-
-    return bodyMap;
-  }
-
-  private BankPaymentResponseDTO buildBankPaymentResponseDTO(boolean authorized) {
-    final String AUTHORIZED_CODE = "f973e576-c898-448a-800d-9effc0e064e4";
-    return new BankPaymentResponseDTO(authorized, authorized ? AUTHORIZED_CODE : "");
   }
 }

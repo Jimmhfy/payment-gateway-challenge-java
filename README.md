@@ -22,6 +22,8 @@ An Optional field of Idempotency key will be checked in request header to preven
    1. Request: Merchant sends a `GET` request using the payment_id ([Example Request](#retrieve-a-processed-payment-get-paymentid))
    2. Response: Returns the historical payment result if it exists
 
+![projectFlowDiagram.png](projectFlowDiagram.png)
+
 For more API detail, please head up to ([Swagger API Document](#swagger-api-document))
 
 ## Library Version
@@ -37,7 +39,7 @@ For more API detail, please head up to ([Swagger API Document](#swagger-api-docu
 
 ## Quick Start
 ### Docker - Start the all services
-`docker-compose up`
+`docker compose up`
 
 | Service / Container | Port | Description                                                  |
 |---------------------|------|--------------------------------------------------------------|
@@ -66,7 +68,7 @@ curl -X POST http://localhost:8090/payment \
     "cvv": "111",
     "card_number": "4321432143214321",
     "expiry_month": 1,
-    "expiry_year": 2027
+    "expiry_year": 2100
   }'
 ```
 - Request (With Idempotency Key):
@@ -80,7 +82,7 @@ curl -X POST http://localhost:8090/payment \
     "cvv": "111",
     "card_number": "4321432143214321",
     "expiry_month": 1,
-    "expiry_year": 2027
+    "expiry_year": 2100
   }'
 ```
 #### Expected Response
@@ -90,7 +92,7 @@ curl -X POST http://localhost:8090/payment \
   "status": "Authorized",
   "cardNumberLastFour": 4321,
   "expiryMonth": 1,
-  "expiryYear": 2027,
+  "expiryYear": 2100,
   "currency": "GBP",
   "amount": 100
 }
@@ -108,7 +110,7 @@ curl -X GET http://localhost:8090/payment/977b2dd6-e085-4cc5-a142-e16fd6f7c7ef
   "status": "Authorized",
   "cardNumberLastFour": 4321,
   "expiryMonth": 1,
-  "expiryYear": 2027,
+  "expiryYear": 2100,
   "currency": "GBP",
   "amount": 100
 }

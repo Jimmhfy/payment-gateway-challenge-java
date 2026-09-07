@@ -1,16 +1,16 @@
-package com.checkout.payment.gateway.cardValidator;
+package com.checkout.payment.gateway.validator;
 
 import com.checkout.payment.gateway.exception.InvalidCardException;
 import com.checkout.payment.gateway.exception.PaymentServerErrorCode;
 import com.checkout.payment.gateway.model.PostPaymentRequest;
 import com.checkout.payment.gateway.model.ValidationFieldError;
-import com.checkout.payment.gateway.validator.CardValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.YearMonth;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static com.checkout.payment.gateway.PaymentTestDataHelper.*;
 
 class CardValidatorTest {
   private CardValidator cardValidator;
@@ -63,13 +63,5 @@ class CardValidatorTest {
     ValidationFieldError error = ex.getErrors().stream().findFirst().orElseThrow();
     assertEquals("expiryDate", error.field());
     assertEquals("The card expiration date must be in the future", error.message());
-  }
-
-  private PostPaymentRequest buildPaymentRequest() {
-    PostPaymentRequest request = new PostPaymentRequest();
-    YearMonth future = YearMonth.now().plusYears(1);
-    request.setExpiryYear(future.getYear());
-    request.setExpiryMonth(future.getMonthValue());
-    return request;
   }
 }
